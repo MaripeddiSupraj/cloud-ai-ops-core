@@ -39,6 +39,7 @@ def main() -> int:
     parser.add_argument("--classifier-model", default="llama3:latest")
     parser.add_argument("--verifier-model", default="deepseek-r1:latest")
     parser.add_argument("--vision-model", default="")
+    parser.add_argument("--context-file", help="Optional text file containing the full post content to preserve during enhancement.")
     parser.add_argument("--push-public", action="store_true", help="Commit and push the public repo after publishing.")
     args = parser.parse_args()
 
@@ -52,6 +53,14 @@ def main() -> int:
         print("  export LINKEDIN_COOKIE='li_at=your_real_cookie_here'", file=sys.stderr)
         return 2
 
+    context_text = ""
+    if args.context_file:
+        context_path = Path(args.context_file).expanduser().resolve()
+        if not context_path.exists():
+            print(f"Context file not found: {context_path}", file=sys.stderr)
+            return 2
+        context_text = context_path.read_text(encoding="utf-8")
+
     try:
         result = process_url(
             url=url,
@@ -62,6 +71,7 @@ def main() -> int:
                 verifier_model=args.verifier_model,
                 vision_model=args.vision_model,
             ),
+            context_text=context_text,
         )
     except Exception as exc:
         print(f"Pipeline failed: {exc}", file=sys.stderr)

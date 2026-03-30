@@ -50,6 +50,14 @@ python3 run_pipeline.py "https://example.com/post" \
   --push-public
 ```
 
+If a source like LinkedIn does not expose the full post text cleanly, save the post text in a local file and pass it with `--context-file` so the main content is preserved:
+
+```bash
+python3 run_pipeline.py "https://example.com/post" \
+  --context-file ./post.txt \
+  --public-repo ../cloud-ai-ops-knowledge
+```
+
 ## Design
 
 The public repo is output-only. All logic stays here:

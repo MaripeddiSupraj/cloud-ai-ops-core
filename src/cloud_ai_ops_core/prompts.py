@@ -58,11 +58,18 @@ Return only JSON:
 {{
   "title": "clean title",
   "summary": "2-3 sentence summary",
+  "core_points": ["preserved point 1", "preserved point 2", "preserved point 3"],
   "why_it_matters": "short practical value",
   "key_takeaways": ["takeaway 1", "takeaway 2", "takeaway 3"],
   "verification_notes": ["note 1", "note 2"],
   "official_sources": ["https://..."]
 }}
+
+Important:
+- preserve the main source content
+- if the source has numbered frameworks, lists, strategies, or scenario questions, keep them in `core_points`
+- do not replace the source with generic cloud/AI advice
+- `core_points` should capture the main structure of the original post
 
 Source URL: {url}
 Title: {title}
@@ -76,6 +83,7 @@ Description: {description}
 Excerpt: {excerpt}
 Image summary: {image_summary}
 Official source excerpts: {official_excerpts}
+Provided context: {provided_context}
 """
 
 

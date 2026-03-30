@@ -16,6 +16,7 @@ class ExtractedAsset:
     image_paths: list[str] = field(default_factory=list)
     official_source_urls: list[str] = field(default_factory=list)
     search_query: str = ""
+    provided_context: str = ""
 
 
 @dataclass
@@ -40,6 +41,7 @@ class EnhancedPost:
     source_url: str
     summary: str
     why_it_matters: str
+    core_points: list[str]
     key_takeaways: list[str]
     verification_notes: list[str]
     official_sources: list[str]
