@@ -77,3 +77,31 @@ Excerpt: {excerpt}
 Image summary: {image_summary}
 Official source excerpts: {official_excerpts}
 """
+
+
+VERIFICATION_PROMPT = """You are a web verification agent.
+
+Goal:
+- inspect the source post summary
+- inspect search-result excerpts
+- decide whether the post appears accurate, partially accurate, unverifiable, outdated, or hype-heavy
+- prefer official and primary sources
+
+Return only JSON:
+{{
+  "verification_notes": ["note 1", "note 2", "note 3"],
+  "supporting_sources": ["https://...", "https://..."],
+  "official_sources": ["https://..."]
+}}
+
+Source URL: {url}
+Title: {title}
+Content type: {content_type}
+Category: {category}
+Subcategory: {subcategory}
+Tools: {tools}
+Post excerpt: {excerpt}
+Image summary: {image_summary}
+Official source excerpts: {official_excerpts}
+Search-result excerpts: {search_excerpts}
+"""

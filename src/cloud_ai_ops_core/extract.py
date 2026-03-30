@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import mimetypes
+import os
 import re
 import tempfile
 from pathlib import Path
@@ -118,7 +119,12 @@ def infer_official_sources(text: str) -> list[str]:
 def fetch_url_context(url: str) -> ExtractedAsset:
     parsed = urlparse(url)
     title = derive_title_from_url(url)
-    request = Request(url, headers={"User-Agent": "Mozilla/5.0 CloudAIOpsCore"})
+    headers = {"User-Agent": "Mozilla/5.0 CloudAIOpsCore"}
+    if "linkedin.com" in parsed.netloc.lower():
+        linkedin_cookie = os.getenv("LINKEDIN_COOKIE", "").strip()
+        if linkedin_cookie:
+            headers["Cookie"] = linkedin_cookie
+    request = Request(url, headers=headers)
     try:
         with urlopen(request, timeout=20) as response:
             body = response.read(250000).decode("utf-8", errors="ignore")
@@ -151,4 +157,5 @@ def fetch_url_context(url: str) -> ExtractedAsset:
         image_urls=image_urls,
         image_paths=image_paths,
         official_source_urls=official_source_urls,
+        search_query=" ".join(part for part in [final_title, description[:120], parsed.netloc] if part).strip(),
     )

@@ -7,7 +7,8 @@ from pathlib import Path
 from .extract import fetch_url_context
 from .models import ClassifiedPost, EnhancedPost, PublishedEntry
 from .ollama_client import OllamaConfig, chat_json, describe_images
-from .prompts import CLASSIFICATION_PROMPT, ENHANCEMENT_PROMPT
+from .prompts import CLASSIFICATION_PROMPT, ENHANCEMENT_PROMPT, VERIFICATION_PROMPT
+from .search import search_web
 
 
 CONTENT_TYPE_TO_SUBDIR = {
@@ -35,6 +36,16 @@ def fetch_official_context(urls: list[str]) -> str:
         asset = fetch_url_context(url)
         if asset.excerpt:
             excerpts.append(f"{url}: {asset.excerpt[:500]}")
+    return "\n".join(excerpts)
+
+
+def fetch_search_context(urls: list[str]) -> str:
+    excerpts = []
+    for url in urls[:5]:
+        asset = fetch_url_context(url)
+        text = asset.excerpt[:400] if asset.excerpt else ""
+        if text:
+            excerpts.append(f"{url}: {text}")
     return "\n".join(excerpts)
 
 
@@ -76,6 +87,23 @@ def classify_agent(url: str, ollama: OllamaConfig) -> tuple[ClassifiedPost, str]
 def enhance_agent(url: str, classified: ClassifiedPost, image_summary: str, ollama: OllamaConfig) -> EnhancedPost:
     asset = fetch_url_context(url)
     official_context = fetch_official_context(asset.official_source_urls)
+    search_urls = search_web(asset.search_query or classified.title, limit=5)
+    search_context = fetch_search_context(search_urls)
+    verification_response = chat_json(
+        ollama.verifier_model,
+        VERIFICATION_PROMPT.format(
+            url=asset.url,
+            title=classified.title,
+            content_type=classified.content_type,
+            category=classified.category,
+            subcategory=classified.subcategory,
+            tools=", ".join(classified.tools) or "unclassified",
+            excerpt=asset.excerpt or "n/a",
+            image_summary=image_summary or "n/a",
+            official_excerpts=official_context or "n/a",
+            search_excerpts=search_context or "n/a",
+        ),
+    )
     prompt = ENHANCEMENT_PROMPT.format(
         url=asset.url,
         title=classified.title,
@@ -88,7 +116,10 @@ def enhance_agent(url: str, classified: ClassifiedPost, image_summary: str, olla
         description=asset.description or "n/a",
         excerpt=asset.excerpt or "n/a",
         image_summary=image_summary or "n/a",
-        official_excerpts=official_context or "n/a",
+        official_excerpts="\n".join(
+            part for part in [official_context, search_context, "\n".join(verification_response.get("verification_notes", []))]
+        )
+        or "n/a",
     )
     response = chat_json(ollama.verifier_model, prompt)
     return EnhancedPost(
@@ -101,8 +132,9 @@ def enhance_agent(url: str, classified: ClassifiedPost, image_summary: str, olla
         summary=response["summary"],
         why_it_matters=response["why_it_matters"],
         key_takeaways=response["key_takeaways"],
-        verification_notes=response["verification_notes"],
-        official_sources=response["official_sources"] or asset.official_source_urls,
+        verification_notes=response["verification_notes"] + verification_response.get("verification_notes", []),
+        official_sources=response["official_sources"] or verification_response.get("official_sources", []) or asset.official_source_urls,
+        supporting_sources=verification_response.get("supporting_sources", search_urls),
     )
 
 
@@ -110,6 +142,7 @@ def build_markdown(item: EnhancedPost) -> str:
     takeaways = "\n".join(f"- {point}" for point in item.key_takeaways)
     verification = "\n".join(f"- {point}" for point in item.verification_notes)
     official = "\n".join(f"- {url}" for url in item.official_sources)
+    supporting = "\n".join(f"- {url}" for url in item.supporting_sources)
     tools = "\n".join(f"- {tool}" for tool in item.tools) if item.tools else "- unclassified"
     return f"""# {item.title}
 
@@ -136,6 +169,10 @@ def build_markdown(item: EnhancedPost) -> str:
 ## Official Sources
 
 {official}
+
+## Supporting Sources
+
+{supporting}
 
 ## Original Source
 
