@@ -32,8 +32,7 @@ export LINKEDIN_COOKIE='li_at=your_linkedin_cookie_here'
 ```
 
 ```bash
-python3 run_pipeline.py \
-  --url "https://example.com/post" \
+python3 run_pipeline.py "https://example.com/post" \
   --public-repo ../cloud-ai-ops-knowledge \
   --classifier-model llama3:latest \
   --verifier-model deepseek-r1:latest
@@ -44,8 +43,7 @@ If you want image understanding for posts that contain screenshots or visuals, i
 Push the public output immediately:
 
 ```bash
-python3 run_pipeline.py \
-  --url "https://example.com/post" \
+python3 run_pipeline.py "https://example.com/post" \
   --public-repo ../cloud-ai-ops-knowledge \
   --classifier-model llama3:latest \
   --verifier-model deepseek-r1:latest \
