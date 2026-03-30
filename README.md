@@ -4,11 +4,12 @@ Cloud AI Ops Core contains the ingestion and orchestration logic behind the publ
 
 ## Purpose
 
-This repo handles three stages:
+This repo handles four stages:
 
-1. `classify agent`: detect content type, categories, tools, and source context from a link
-2. `enhance agent`: structure the note and attach official-source references for cross-checking
-3. `publish agent`: write the final markdown into the public repo and optionally commit and push it
+1. `extract agent`: fetch post/blog/repo content and gather image inputs
+2. `classify agent`: use Ollama to detect content type, category, subcategory, and tools
+3. `verify/enhance agent`: use Ollama plus official-source context to improve the note and check accuracy
+4. `publish agent`: write the final markdown into the public repo and optionally commit and push it
 
 The public reading repo is separate:
 
@@ -18,26 +19,21 @@ The public reading repo is separate:
 ## Run
 
 ```bash
-python3 run_pipeline.py --url "https://example.com/post" --public-repo ../cloud-ai-ops-knowledge
-```
-
-Write and push to the public repo in one run:
-
-```bash
 python3 run_pipeline.py \
   --url "https://example.com/post" \
   --public-repo ../cloud-ai-ops-knowledge \
-  --push-public
+  --classifier-model llama3:latest \
+  --verifier-model deepseek-r1:latest
 ```
+
+If you want image understanding for posts that contain screenshots or visuals, install a local Ollama vision model and pass it with `--vision-model`.
 
 ## Design
 
-The code stays intentionally simple and dependency-free:
+The public repo is output-only. All logic stays here:
 
-- standard-library URL fetching
-- rule-based classification
-- official-source hint mapping
-- markdown publishing into the public repo
-
-This keeps the system easy to run, audit, and improve later with a stronger model-backed enhancer if needed.
-
+- Ollama model calls
+- image-aware classification
+- official-source cross-check support
+- category/subcategory path selection
+- final publishing

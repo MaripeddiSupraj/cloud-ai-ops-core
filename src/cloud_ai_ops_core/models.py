@@ -1,26 +1,53 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+
+@dataclass
+class ExtractedAsset:
+    url: str
+    final_url: str
+    domain: str
+    title: str
+    description: str
+    excerpt: str
+    content_type_hint: str
+    image_urls: list[str] = field(default_factory=list)
+    image_paths: list[str] = field(default_factory=list)
+    official_source_urls: list[str] = field(default_factory=list)
 
 
 @dataclass
 class ClassifiedPost:
-    url: str
     title: str
-    source_name: str
-    source_domain: str
     content_type: str
-    categories: list[str]
+    category: str
+    subcategory: str
     tools: list[str]
-    summary_seed: str
+    confidence: str
+    rationale: str
+    verification_points: list[str]
+
+
+@dataclass
+class EnhancedPost:
+    title: str
+    category: str
+    subcategory: str
+    content_type: str
+    tools: list[str]
+    source_url: str
+    summary: str
+    why_it_matters: str
+    key_takeaways: list[str]
+    verification_notes: list[str]
     official_sources: list[str]
-    fetched_excerpt: str
 
 
 @dataclass
 class PublishedEntry:
     entry_path: str
+    category: str
+    subcategory: str
     content_type: str
-    primary_category: str
     tools: list[str]
-
