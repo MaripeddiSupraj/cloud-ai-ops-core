@@ -19,6 +19,18 @@ The public reading repo is separate:
 
 ## Run
 
+Check local setup first:
+
+```bash
+python3 check_setup.py
+```
+
+Set LinkedIn auth in your shell:
+
+```bash
+export LINKEDIN_COOKIE='li_at=your_linkedin_cookie_here'
+```
+
 ```bash
 python3 run_pipeline.py \
   --url "https://example.com/post" \
@@ -28,6 +40,17 @@ python3 run_pipeline.py \
 ```
 
 If you want image understanding for posts that contain screenshots or visuals, install a local Ollama vision model and pass it with `--vision-model`.
+
+Push the public output immediately:
+
+```bash
+python3 run_pipeline.py \
+  --url "https://example.com/post" \
+  --public-repo ../cloud-ai-ops-knowledge \
+  --classifier-model llama3:latest \
+  --verifier-model deepseek-r1:latest \
+  --push-public
+```
 
 ## Design
 
